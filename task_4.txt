@@ -1,0 +1,81 @@
+create schema `university`
+
+create table course(
+id integer,
+course_title varchar(255),
+primary key(id))
+
+create table teacher(
+id integer,
+first_name varchar(255),
+last_name varchar(255),
+email varchar(255),
+primary key(id))
+
+create table group(
+id integer,
+name varchar(255),
+teacher_id integer,
+primary key(id),
+foreign key(teacher_id) references teacher(id))
+
+create table student(
+id integer,
+first_name varchar(255),
+last_name varchar(255),
+group_id integer,
+primary key(id),
+foreign key(group_id) references group(id))
+
+create table course_group(
+course_id integer,
+group_id integer,
+primary key(course_id, group_id),
+foreign key(course_id) references course(id),
+foreign key(group_id) references group(id))
+
+create table marks(
+id integer,
+course_id integer,
+student_id integer,
+mark varchar(8),
+primary key(id),
+foreign key(course_id) references course(id),
+foreign key(student_id) references student(id))
+
+select t.first_name, t.last_name, count(s.id)
+from teacher t
+join course c on c.teacher_id=t.id
+join course_group cg on cg.course_id=c.id
+join group g on g.id=cg.group_id
+join student s on s.group_id=g.id
+where count(s.id) > 2000
+group by group.id
+
+select *
+from student s
+join marks m on m.student_id=s.id
+join course c = c.id=m.course_id
+where c.course_title = 'Programming' and m.mark>4
+order by s.last_name ASC, s.first_name ASC
+
+select g.name, count(distinct s.id), count(distinct teacher_id)
+from group g
+join course_group cg on cg.group_id=g.id
+join group g on g.id=cg.group_id
+join student s on s.group_id=g.id
+join marks m on m.student_id=s.id
+join teacher t on t.id=g.teacher_id
+where m.mark > 4
+group by group.id
+UNION
+select g.name, count(distinct s.id)
+from group g
+join course_group cg on cg.group_id=g.id
+join group g on g.id=cg.group_id
+join student s on s.group_id=g.id
+join marks m on m.student_id=s.id
+group by group.id
+
+
+
